@@ -1,0 +1,64 @@
+html {
+    font-family: sans-serif;
+    font-size: 10pt;
+}
+
+.comment {
+    padding: .5em;
+}
+.comment:nth-child(odd) {
+    background: #f1f1f1;    
+}
+.comment:nth-child(even) {
+    background: #fff;    
+}
+
+fieldset input, 
+fieldset textarea {
+    width: 100%;
+}
+
+table {
+    width: 100%;
+    font-size: inherit;
+}
+
+tbody > tr > td {
+    vertical-align: top;
+}
+
+tbody > tr:nth-child(even) {
+    background: #f1f1f1;
+}
+
+thead th {
+    text-align: left;
+}
+
+#comment-form {
+    margin-top: 1em;
+    width: 500px;
+}
+
+p {
+    padding: 0;
+    margin: .5em 0 0 0;
+}
+
+table.issue > tbody > tr > td:first-child {
+    white-space: nowrap;
+    padding-right: 1em;
+    font-weight: bold;
+}
+
+.pagination > form {
+    display: inline-block;
+}
+
+nav {
+    font-size: 1.4em;
+}
+
+nav a {
+    text-decoration: none;
+}
