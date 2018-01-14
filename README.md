@@ -15,3 +15,10 @@ sudo -u www-data [path-to-uwsgi] ./uwsgi.ini
 ```
 
 Alternatively, you may use Apache to deploy with CGI, which is something we at Luna.Red typically don't do because it's Apache.
+
+Tissue depends on a SQLite database.  Create a new one named `tissue.db` and run the provided sql files in the sql folder to prepare the database.  The app will then use them accordingly.  This can be done by running
+
+```
+sqlite tissue.db
+sqlite> .read sql/schema.sql
+```
