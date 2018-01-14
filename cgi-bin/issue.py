@@ -4,48 +4,21 @@ import cgi
 import cgitb
 cgitb.enable()
 
-from tissue.render import render_banner
+from tissue.render import base_template
+from tissue.models import get_db
 
+form = cgi.FieldStorage()
+id = form.getvalue('id')
 
 ticket_name = cgi.escape("Hello World <b>Test</b>")
 
-issue = {
-    "project": "tissue",
-    "id": 1,
-    "author": "Nicholas Hydock",
-    "email": "nick@luna.red",
-    "title": "Test Issue doesn't even show up properly",
-    "text": "Y'all are dinguses, you really think you can provide an app that doesn't even work???\n\n people are even going to use it, the fuck is your problem.",
-    "state": 'Open',
-    "time": "2018-01-12T9:24:12-04:00",
-    "lastUpdated": "2018-01-12T10:24:12-04:00",
-}
-
-comments = [
-    {
-        "author": "System",
-        "text": "Ticket opened",
-        "time": "2018-01-12T9:24:12-04:00",
-    },
-    {
-        "author": "Nicholas Hydock",
-        "email": "nick@luna.red",
-        "text": "This app is trash, wtf, why is there such a bug in it.",
-        "time": "2018-01-12T9:25:29-04:00",
-    },
-    {
-        "author": "Patrick Flanagan",
-        "email": "pjf@luna.red",
-        "text": "Not enough GNU and/or too much GNU.  Have you tried running it on a BSD server?",
-        "time": "2018-01-12T10:07:33-04:00",
-    },
-    {
-        "author": "Chris Hersh",
-        "email": "satan@luna.red",
-        "text": "Rewrite it in Rust",
-        "time": "2018-01-12T10:24:12-04:00",
-    }
-]
+db = get_db()
+cur = db.cursor()
+cur.execute("SELECT * FROM Issues WHERE id = ?", (id,))
+issue = cur.fetchone()
+cur.execute("SELECT * FROM Comments WHERE issue_id = ?", (id,))
+comments = cur.fetchall()[:]
+db.close()
 
 STATES = [
     'Open',
@@ -55,7 +28,7 @@ STATES = [
 selected_state = 'Open'
 
 def show_email(c):
-    if c.get("email") is not None:
+    if c["email"] is not None:
         return f"""<i>&lt;{escape(c["email"])}&gt;</i>"""
     return ""
 
@@ -74,15 +47,15 @@ def render_ticket():
             </tr>
             <tr>
                 <td>Opened At</td>
-                <td>{issue['time']}</td>
+                <td>{issue['opened']}</td>
             <tr>
             <tr>
                 <td>Last Updated</td>
-                <td>{issue['lastUpdated']}</td>
+                <td>{issue['last_updated']}</td>
             <tr>
             <tr>
                 <td>Summary</td>
-                <td>{escape(issue['text'])}</td>
+                <td>{escape(issue['body'])}</td>
             </tr>
         </tbody>
     </table>
@@ -94,10 +67,10 @@ def render_comments():
         return f"""
             <div class="comment">
                 <strong>{escape(c['author'])}</strong>{show_email(c)}<br>
-                <sub>{escape(c['time'])}</sub><br>
+                <sub>{escape(c['created_at'])}</sub><br>
                 <p>
                     {
-                        escape(c['text'])
+                        escape(c['body'])
                     }
                 </p>
             </div>
@@ -149,27 +122,9 @@ def comment_form():
         </form>
     """
 
-## HEADERS
-print("Content-Type: text/html")
-print("")
-
-## CONTENT
-print(f"""
-<head>
-    <title>Tissue - {ticket_name}</title>
-    <link rel="stylesheet" type="text/css" href="/static/style.css">
-</head>
-<body>
-    <header>
-        {render_banner(issue['project'])}
-    </header>
-    <article>
-        {render_ticket()}
-        <h2>Activity</h2>
-        {render_comments()}
-    </article>
-    <footer>
-        {comment_form()}
-    </footer>
-</body>
+base_template(f"""
+{render_ticket()}
+<h2>Activity</h2>
+{render_comments()}
+{comment_form()}
 """)

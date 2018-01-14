@@ -3,6 +3,19 @@ html {
     font-size: 10pt;
 }
 
+header {
+    margin-bottom: 1em;
+}
+
+footer {
+    margin-top: 1em;
+    padding-top: .5em;
+    border-top: solid 2px #aaa;
+    color: #aaa;
+    font-size: .8em;
+    text-align: center;
+}
+
 .comment {
     padding: .5em;
 }
@@ -27,7 +40,7 @@ tbody > tr > td {
     vertical-align: top;
 }
 
-tbody > tr:nth-child(even) {
+table.striped > tbody > tr:nth-child(even) {
     background: #f1f1f1;
 }
 
@@ -35,7 +48,8 @@ thead th {
     text-align: left;
 }
 
-#comment-form {
+#comment-form,
+#issue-form {
     margin-top: 1em;
     width: 500px;
 }

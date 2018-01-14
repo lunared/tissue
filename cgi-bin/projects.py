@@ -4,24 +4,29 @@ import cgi
 import cgitb
 cgitb.enable()
 
-from tissue.render import render_banner
+from tissue.render import base_template
+from tissue.models import get_db
 
+db = get_db()
+cur = db.cursor()
+cur.execute(
+    """
+    SELECT 
+        id,
+        name,
+        description,
+        homepage,
+        (
+            SELECT count(*) FROM Issues where project_id = p.id
+        ) as open
+    FROM Projects p
+    """
+)
+rows = cur.fetchall()
 projects = [
-    {
-        "id": 1,
-        "name": "Tissue",
-        "description": "Light-weight issue tracker",
-        "homepage": "https://github.com/lunared/tissue",
-        "open": 129,
-    },
-    {
-        "id": 2,
-        "name": "C:\\raft",
-        "description": "Retro dungeon crawler",
-        "homepage": "https://smagac.github.io/",
-        "open": 4
-    },
+    row for row in rows
 ]
+db.close()
 
 def render_project(project):
     return f"""
@@ -33,35 +38,18 @@ def render_project(project):
         </tr>
     """
 
-
-## HEADERS
-print("Content-Type: text/html")
-print("")
-
-## CONTENT
-print(f"""
-<head>
-    <title>Tissue - Projects</title>
-    <link rel="stylesheet" type="text/css" href="/static/style.css">
-</head>
-<body>
-    <header>
-        {render_banner()}
-    </header>
-    <article>
-        <table summary="projects" class="projects">
-            <thead>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Homepage</th>
-                <th>Open Issues</th>
-            </thead>
-            <tbody>
-                {
-                    "".join([render_project(c) for c in projects])
-                }
-            </tbody>
-        </table>
-    </article>
-</body>
+base_template(f"""
+<table summary="projects" class="projects striped">
+    <thead>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Homepage</th>
+        <th>Open Issues</th>
+    </thead>
+    <tbody>
+        {
+            "".join([render_project(c) for c in projects])
+        }
+    </tbody>
+</table>
 """)

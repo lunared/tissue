@@ -4,7 +4,8 @@ import cgi
 import cgitb
 cgitb.enable()
 
-from tissue.render import render_banner
+from tissue.render import base_template
+from tissue.models import get_db
 
 def get_project(id):
     return []
@@ -12,80 +13,50 @@ def get_project(id):
 form = cgi.FieldStorage()
 filter_by = form.getlist("filter_by")
 project = form.getvalue('project')
-issues = [
-    {
-        "id": 1,
-        "title": "Test Issue doesn't even show up properly",
-        "state": "Open",
-        "lastUpdated": "2018-01-12T10:24:12-04:00",
-    },
-    {
-        "id": 2,
-        "title": "OwO what is this?",
-        "state": "Open",
-        "lastUpdated": "2018-01-12T10:24:12-04:00",
-    },
-    {
-        "id": 5,
-        "title": "WoW Gold good shit",
-        "state": "Open",
-        "lastUpdated": "2018-01-12T10:24:12-04:00",
-    },
-    {
-        "id": 666,
-        "title": "Uninstall League",
-        "state": "Open",
-        "lastUpdated": "2018-01-12T10:24:12-04:00",
-    },
-]
+
+db = get_db()
+cur = db.cursor()
+cur.execute(
+    """
+    SELECT * FROM Issues
+    WHERE project_id = ?
+    ORDER BY datetime(last_updated) DESC
+    """,
+    (project,)
+)
+issues = cur.fetchall()[:]
+db.close()
 
 def render_issue(issue):
     return f"""
         <tr>
             <td><a href="/cgi-bin/issue.py?id={issue['id']}">#{issue['id']} - {issue['title']}</a></td>
-            <td>{issue['state']}</a></td>
-            <td>{issue['lastUpdated']}</td>
+            <td>{issue['state']}</td>
+            <td>{issue['last_updated']}</td>
         </tr>
     """
 
 
-## HEADERS
-print("Content-Type: text/html")
-print("")
-
-## CONTENT
-print(f"""
-<head>
-    <title>Tissue - Projects</title>
-    <link rel="stylesheet" type="text/css" href="/static/style.css">
-</head>
-<body>
-    <header>
-        {render_banner()}
-    </header>
-    <article>
-        <table summary="projects" class="projects">
-            <thead>
-                <th>Issue</th>
-                <th>Status</th>
-                <th>Last Activity</th>
-            </thead>
-            <tbody>
-                {
-                    "".join([render_issue(c) for c in issues])
-                }
-            </tbody>
-        </table>
-    </article>
-    <footer>
-        <div class="pagination">
-            <span>Page 1 of 1</span>
-            <form action="/cgi-bin/issues.py" method="GET">
-                <input type="hidden" value="{project}" name="project">
-                <input type="number" value="1" name="page">
-                <button type="submit">Go</button>
-            </form>
-        </div>
-    </footer>
-</body>
+base_template(f"""
+<a href="/cgi-bin/create_issue.py?project={project}">Create Issue</a>
+<table summary="projects" class="projects striped">
+    <thead>
+        <th>Issue</th>
+        <th>Status</th>
+        <th>Last Activity</th>
+    </thead>
+    <tbody>
+        {
+            "".join([render_issue(c) for c in issues])
+        }
+    </tbody>
+</table>
+<div class="pagination">
+    <span>Page 1 of 1</span>
+    <form action="/cgi-bin/issues.py" method="GET">
+        <input type="hidden" value="{project}" name="project">
+        <input type="number" value="1" name="page">
+        <button type="submit">Go</button>
+    </form>
+</div>
 """)
