@@ -87,28 +87,29 @@ def comment_form():
     ])
 
     return f"""
-        <form id="comment-form" action="/comment.py" target="_blank" method="post">
+        <form id="comment-form" action="/cgi-bin/comment.py" method="post">
+            <input type="hidden" name="issue" value="{id}" />
             <fieldset>
                 <legend>Add Comment</legend>
                 <table>
                     <tbody>
                         <tr>
                             <td>Author Name</td>
-                            <td><input type="text" name="name"></td>
+                            <td><input type="text" name="author" required></td>
                         </tr>
                         <tr>
                             <td>Email</td>
-                            <td><input type="email" name="email"></td>
+                            <td><input type="email" name="email" required></td>
                         </tr>
                         <tr>
                             <td>Comment</td>
-                            <td><textarea name="comment" rows="4"></textarea></td>
+                            <td><textarea name="body" rows="4" required></textarea></td>
                         </tr>
                         <tr>
                             <td>Change State</td>
                             <td>
                                 <select name="state">
-                                    <option selected>--</option>
+                                    <option value="" selected>--</option>
                                     {state_dropdown}
                                 </select>
                             </td>
