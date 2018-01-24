@@ -17,7 +17,10 @@ cur.execute(
         description,
         homepage,
         (
-            SELECT count(*) FROM Issues where project_id = p.id
+            SELECT count(*) FROM Issues 
+            where project_id = p.id AND (
+                UPPER(state) NOT LIKE "CLOSED" OR state is null
+            )
         ) as open
     FROM Projects p
     """
